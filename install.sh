@@ -28,7 +28,7 @@ echo "📦 Detected System: $OS-$ARCH"
 
 # 2. Fetch the latest release URL from GitHub API
 echo "🔍 Fetching latest release..."
-API_RESPONSE=$(curl -s "https://github.com/$GITHUB_REPO/releases/latest")
+API_RESPONSE=$(curl -s "https://api.github.com/repos/$GITHUB_REPO/releases/latest")
 
 if echo "$API_RESPONSE" | grep -q '"message": "Not Found"'; then
     echo "❌ GitHub API Error: No releases found for $GITHUB_REPO."

@@ -27,9 +27,20 @@ fi
 echo "📦 Detected System: $OS-$ARCH"
 
 # 2. Fetch the latest release URL from GitHub API
-# Note: If your repo is private, you will need to pass a GitHub Personal Access Token in the curl header.
 echo "🔍 Fetching latest release..."
-LATEST_URL=$(curl -s "https://api.github.com/repos/$GITHUB_REPO/releases/latest" | grep "browser_download_url" | grep "minato_${OS}_${ARCH}.tar.gz" | cut -d '"' -f 4)
+API_RESPONSE=$(curl -s "https://github.com/$GITHUB_REPO/releases/latest")
+
+if echo "$API_RESPONSE" | grep -q '"message": "Not Found"'; then
+    echo "❌ GitHub API Error: No releases found for $GITHUB_REPO."
+    echo "Make sure you have published a release on GitHub."
+    exit 1
+elif echo "$API_RESPONSE" | grep -q '"message":'; then
+    ERROR_MSG=$(echo "$API_RESPONSE" | grep '"message":' | cut -d '"' -f 4)
+    echo "❌ GitHub API Error: $ERROR_MSG"
+    exit 1
+fi
+
+LATEST_URL=$(echo "$API_RESPONSE" | grep "browser_download_url" | grep "minato_${OS}_${ARCH}.tar.gz" | cut -d '"' -f 4)
 
 if [ -z "$LATEST_URL" ]; then
     echo "❌ Could not find a matching release for $OS $ARCH."

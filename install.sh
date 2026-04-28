@@ -7,7 +7,7 @@ set -e
 # ==============================================================================
 
 # REPLACE THIS WITH YOUR ACTUAL GITHUB REPO (e.g., username/minato)
-GITHUB_REPO="gulshankumar09/minato-install"
+GITHUB_REPO="gulshankumar09/minato-paas"
 
 echo "🚀 Installing Minato PaaS..."
 

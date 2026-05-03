@@ -26,6 +26,26 @@ fi
 
 echo "📦 Detected System: $OS-$ARCH"
 
+prompt_with_default() {
+    local prompt="$1"
+    local fallback="$2"
+    local value=""
+
+    if [ -t 0 ]; then
+        read -rp "$prompt [$fallback]: " value
+    fi
+
+    if [ -z "$value" ]; then
+        value="$fallback"
+    fi
+
+    printf '%s' "$value"
+}
+
+OWNER_NAME=$(prompt_with_default "Enter initial owner name" "Owner")
+OWNER_EMAIL=$(prompt_with_default "Enter initial owner email" "owner@local.minato")
+TEAM_NAME=$(prompt_with_default "Enter team name" "Default Team")
+
 # 2. Fetch the latest release URL from GitHub API
 echo "🔍 Fetching latest release..."
 API_RESPONSE=$(curl -s "https://api.github.com/repos/$GITHUB_REPO/releases/latest")
@@ -66,6 +86,19 @@ sudo chmod +x /usr/local/bin/minato-agent
 # Clean up temporary files
 rm -rf /tmp/minato.tar.gz /tmp/minato-release
 
+echo "📁 Preparing Minato configuration..."
+sudo mkdir -p /etc/minato
+cat <<EOF | sudo tee /etc/minato/minato.env >/dev/null
+MINATO_OWNER_NAME=${OWNER_NAME}
+MINATO_OWNER_EMAIL=${OWNER_EMAIL}
+MINATO_TEAM_NAME=${TEAM_NAME}
+EOF
+
+echo "📁 Preparing runtime directories..."
+sudo mkdir -p /opt/minato/apps
+sudo chown -R root:root /opt/minato
+sudo chmod -R 755 /opt/minato
+
 # 5. Create Systemd Service for the Master Node
 echo "📝 Configuring Systemd Service..."
 cat << 'EOF' | sudo tee /etc/systemd/system/minato.service
@@ -75,6 +108,7 @@ After=network.target
 
 [Service]
 Type=simple
+EnvironmentFile=-/etc/minato/minato.env
 ExecStart=/usr/local/bin/minato-backend
 Restart=always
 RestartSec=5
@@ -98,5 +132,8 @@ PUBLIC_IP=$(curl -s ifconfig.me || echo "YOUR_SERVER_IP")
 echo ""
 echo "✅ Minato installed successfully!"
 echo "🌐 Access your dashboard at: http://$PUBLIC_IP:8081"
+echo "👤 Initial Minato owner: $OWNER_NAME <$OWNER_EMAIL>"
+echo "🛡️ Role: root"
+echo "👥 Team: $TEAM_NAME"
 echo ""
 echo "To view logs, run: sudo journalctl -fu minato"

@@ -16,3 +16,8 @@ A self-hosted, no-code Platform-as-a-Service (PaaS) and server management panel.
 *   **Reverse Proxy:** Caddy.
 
 ---
+## Installation 
+
+* Download this install.sh and run. It will install all the dependencies and minato on you main server. Later you can add muliple server as worker service.
+
+## Note: Development in progress.
